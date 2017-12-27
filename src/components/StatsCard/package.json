@@ -1,0 +1,6 @@
+{
+  "name": "StatsCard",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./StatsCard.js"
+}

@@ -11,8 +11,8 @@ import path from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
-import expressJwt, { UnauthorizedError as Jwt401Error } from 'express-jwt';
-import expressGraphQL from 'express-graphql';
+import expressJwt, {UnauthorizedError as Jwt401Error} from 'express-jwt';
+// import expressGraphQL from 'express-graphql';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import React from 'react';
@@ -20,15 +20,17 @@ import ReactDOM from 'react-dom/server';
 import PrettyError from 'pretty-error';
 import App from './components/App';
 import Html from './components/Html';
-import { ErrorPageWithoutStyle } from './routes/error/ErrorPage';
+import {ErrorPageWithoutStyle} from './routes/error/ErrorPage';
 import errorPageStyle from './routes/error/ErrorPage.css';
 import createFetch from './createFetch';
-import passport from './passport';
 import router from './router';
-import models from './data/models';
-import schema from './data/schema';
+
 import assets from './assets.json'; // eslint-disable-line import/no-unresolved
 import config from './config';
+import bittrex from 'node-bittrex-api';
+import coins from './coins';
+
+bittrex.options({'apikey': '12dbca8a9a0e45a680f41e57c10af730', 'apisecret': '7d0964f292c2479db0a8345b82437cf6'});
 
 const app = express();
 
@@ -44,19 +46,17 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // -----------------------------------------------------------------------------
 app.use(express.static(path.resolve(__dirname, 'public')));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 //
 // Authentication
 // -----------------------------------------------------------------------------
-app.use(
-  expressJwt({
-    secret: config.auth.jwt.secret,
-    credentialsRequired: false,
-    getToken: req => req.cookies.id_token,
-  }),
-);
+app.use(expressJwt({
+  secret: config.auth.jwt.secret,
+  credentialsRequired: false,
+  getToken: req => req.cookies.id_token
+}),);
 // Error handler for express-jwt
 app.use((err, req, res, next) => {
   // eslint-disable-line no-unused-vars
@@ -68,44 +68,48 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.use(passport.initialize());
-
 if (__DEV__) {
   app.enable('trust proxy');
 }
-app.get(
-  '/login/facebook',
-  passport.authenticate('facebook', {
-    scope: ['email', 'user_location'],
-    session: false,
-  }),
-);
-app.get(
-  '/login/facebook/return',
-  passport.authenticate('facebook', {
-    failureRedirect: '/login',
-    session: false,
-  }),
-  (req, res) => {
-    const expiresIn = 60 * 60 * 24 * 180; // 180 days
-    const token = jwt.sign(req.user, config.auth.jwt.secret, { expiresIn });
-    res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
-    res.redirect('/');
-  },
-);
 
-//
-// Register API middleware
-// -----------------------------------------------------------------------------
-app.use(
-  '/graphql',
-  expressGraphQL(req => ({
-    schema,
-    graphiql: __DEV__,
-    rootValue: { request: req },
-    pretty: __DEV__,
-  })),
-);
+app.use('/test', async (req, res, next) => {
+
+  bittrex.getbalances(function(data, err) {
+    if (err) {
+      res.status(400);
+      res.send(err);
+    }
+    res.status(200);
+
+    if (data) {
+
+      var urls = [];
+      const grabContent = url => fetch(url).then(res => res.text()).then(html => {
+        var data = JSON.parse(html);
+        if (data.length === 1)
+          coins.set(data[0]);
+        }
+      )
+
+      for (var i = 0; i < data.result.length; i++) {
+        var bal = data.result[i];
+        var coin = coins.get(bal.Currency);
+        if (coin) {
+          var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
+          urls.push(url);
+        }
+      }
+
+      Promise.all(urls.map(grabContent)).then(() => {
+        coins.mergeBalances(data.result);
+        res.status(200);
+        res.json(coins.all());
+      });
+    } else
+      res.send('oups!');
+    }
+  );
+});
 
 //
 // Register server-side rendering middleware
@@ -126,14 +130,14 @@ app.get('*', async (req, res, next) => {
       // Universal HTTP client
       fetch: createFetch(fetch, {
         baseUrl: config.api.serverUrl,
-        cookie: req.headers.cookie,
-      }),
+        cookie: req.headers.cookie
+      })
     };
 
     const route = await router.resolve({
       ...context,
       pathname: req.path,
-      query: req.query,
+      query: req.query
     });
 
     if (route.redirect) {
@@ -141,21 +145,26 @@ app.get('*', async (req, res, next) => {
       return;
     }
 
-    const data = { ...route };
-    data.children = ReactDOM.renderToString(
-      <App context={context}>{route.component}</App>,
-    );
-    data.styles = [{ id: 'css', cssText: [...css].join('') }];
+    const data = {
+      ...route
+    };
+    data.children = ReactDOM.renderToString(<App context={context}>{route.component}</App>,);
+    data.styles = [
+      {
+        id: 'css',
+        cssText: [...css].join('')
+      }
+    ];
     data.scripts = [assets.vendor.js];
     if (route.chunks) {
       data.scripts.push(...route.chunks.map(chunk => assets[chunk].js));
     }
     data.scripts.push(assets.client.js);
     data.app = {
-      apiUrl: config.api.clientUrl,
+      apiUrl: config.api.clientUrl
     };
 
-    const html = ReactDOM.renderToStaticMarkup(<Html {...data} />);
+    const html = ReactDOM.renderToStaticMarkup(<Html {...data}/>);
     res.status(route.status || 200);
     res.send(`<!doctype html>${html}`);
   } catch (err) {
@@ -173,15 +182,16 @@ pe.skipPackage('express');
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(pe.render(err));
-  const html = ReactDOM.renderToStaticMarkup(
-    <Html
-      title="Internal Server Error"
-      description={err.message}
-      styles={[{ id: 'css', cssText: errorPageStyle._getCss() }]} // eslint-disable-line no-underscore-dangle
-    >
-      {ReactDOM.renderToString(<ErrorPageWithoutStyle error={err} />)}
-    </Html>,
-  );
+  const html = ReactDOM.renderToStaticMarkup(<Html title="Internal Server Error" description={err.message} styles={[{
+        id: 'css',
+        cssText: errorPageStyle._getCss()
+      }
+    ]}
+    // eslint-disable-line no-underscore-dangle
+
+>
+    {ReactDOM.renderToString(<ErrorPageWithoutStyle error={err}/>)}
+  </Html>,);
   res.status(err.status || 500);
   res.send(`<!doctype html>${html}`);
 });
@@ -189,13 +199,13 @@ app.use((err, req, res, next) => {
 //
 // Launch the server
 // -----------------------------------------------------------------------------
-const promise = models.sync().catch(err => console.error(err.stack));
+//const promise = models.sync().catch(err => console.error(err.stack));
 if (!module.hot) {
-  promise.then(() => {
+  //promise.then(() => {
     app.listen(config.port, () => {
       console.info(`The server is running at http://localhost:${config.port}/`);
     });
-  });
+  //});
 }
 
 //

@@ -25,11 +25,10 @@ class Layout extends React.Component {
 
   render() {
     return (
-      <div>
-        <Header />
+      <div className="main-panel">
+        <Header/>
         {this.props.children}
-        <Feedback />
-        <Footer />
+
       </div>
     );
   }

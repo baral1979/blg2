@@ -41,7 +41,7 @@ class Html extends React.Component {
         <head>
           <meta charSet="utf-8" />
           <meta httpEquiv="x-ua-compatible" content="ie=edge" />
-          <title>{title}</title>
+          <title>BLG Mining</title>
           <meta name="description" content={description} />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           {scripts.map(script => (
@@ -55,6 +55,9 @@ class Html extends React.Component {
               dangerouslySetInnerHTML={{ __html: style.cssText }}
             />
           ))}
+          <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+          <link href="/assets/animate.min.css" rel="stylesheet"/>
+          <link href="/assets/light-bootstrap-dashboard.css" rel="stylesheet"/>
         </head>
         <body>
           <div id="app" dangerouslySetInnerHTML={{ __html: children }} />

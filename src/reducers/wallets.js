@@ -1,8 +1,5 @@
 const initialState = {
-  wallets: [{
-    symbol: 'ETH',
-    value: '0.01'
-  }]
+  wallets: []
 }
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -12,7 +9,7 @@ const reducer = (state = initialState, action) => {
         wallets: state.wallets.concat(action.payload)
       }
       break;
-    case "SET":
+    case "SET_COINS":
       state = {
         ...state,
         wallets: action.payload

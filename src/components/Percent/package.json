@@ -1,0 +1,6 @@
+{
+  "name": "Percent",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Percent.js"
+}
