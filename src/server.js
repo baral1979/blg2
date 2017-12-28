@@ -72,6 +72,20 @@ if (__DEV__) {
   app.enable('trust proxy');
 }
 
+app.use('/deposit/:currency', async (req, res, next) => {
+  bittrex.getdeposithistory({}, function( data, err ) {
+    var total = 0;
+
+    for (var i = 0; i < data.result.length; i++) {
+      var trx = data.result[i];
+      total += trx.Amount;
+    }
+    res.status(200);
+
+    res.send(data.result);
+  });
+});
+
 app.use('/test', async (req, res, next) => {
 
   bittrex.getbalances(function(data, err) {

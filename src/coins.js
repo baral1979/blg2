@@ -17,11 +17,11 @@ const coins = [{
     name: "Cardano",
     symbol: "ADA"
   },
-  {
-    id: "bitcoin",
-    name: "Bitcoin",
-    symbol: "BTC"
-  },
+  // {
+  //   id: "bitcoin",
+  //   name: "Bitcoin",
+  //   symbol: "BTC"
+  // },
   {
     id: "nav-coin",
     name: "NavCoin",

@@ -5,6 +5,19 @@ import Amount from '../Amount';
 
 
 export class Coin extends Component{
+
+    test() {
+    return (  <tr>
+      <td>
+        test
+      </td><td>
+        test
+      </td><td>
+        test
+      </td>
+      </tr>)
+    }
+
     render(){
         var coin = this.props.coin;
         console.log(coin);
@@ -20,6 +33,7 @@ export class Coin extends Component{
               <td>{coin.balance + coin.pending}</td>
               <td><Percent value={coin.percent_change_24h}/></td>
             </tr>
+            {this.test()}
           </tbody>
         );
     }
