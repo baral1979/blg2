@@ -37,11 +37,12 @@ const coins = [{
     symbol: "VTC"
   },
   {
-   id: "stellar",
-   name: "Stellar Lumen",
-   symbol: "XLM"
- }
+    id: "stellar",
+    name: "Stellar Lumen",
+    symbol: "XLM"
+  }
 ];
+
 const set = function(data) {
   var coin = get(data.symbol);
 
@@ -66,7 +67,7 @@ const get = function(symbol) {
   return null;
 }
 
-const mergeBalances = function (balances) {
+const mergeBalances = function(balances) {
   for (var i = 0; i < balances.length; i++) {
     mergeBalance(balances[i]);
   }
@@ -84,9 +85,58 @@ const mergeBalance = function(data) {
   };
 }
 
+const mergeDeposits = function(data) {
+
+
+  for (var i = 0; i < coins.length; i++) {
+    if (!coins[i].deposits)
+      continue;
+
+      coins[i].deposits = [];
+  }
+
+  for (var i = 0; i < data.length; i++) {
+    var dep = data[i];
+    var dt = new Date(dep.LastUpdated);
+
+    if (dt < new Date('2017-11-18'))
+      continue;
+      
+    var coin = get(dep.Currency);
+    if (coin) {
+      if (!coin.deposits)
+        coin.deposits = [];
+
+      coin.deposits.push({
+        amount: dep.Amount,
+        lastUpdated: dep.LastUpdated
+      });
+    }
+  }
+
+  for (var i = 0; i < coins.length; i++) {
+    if (!coins[i].deposits)
+      continue;
+
+    function getSum(a, b) {
+      if (a.amount)
+        return a.amount + b.amount;
+      return a + b.amount;
+    }
+
+    var sum = coins[i].deposits.reduce(getSum);
+    coins[i].mined_qty = sum;
+    coins[i].mined_value_usd = sum * coins[i].price_usd;
+    coins[i].mined_value_btc = sum * coins[i].price_btc;
+  }
+}
+
 export default {
   get: get,
   set: set,
   mergeBalances: mergeBalances,
-  all: function () { return coins; }
+  mergeDeposits: mergeDeposits,
+  all: function() {
+    return coins;
+  }
 }

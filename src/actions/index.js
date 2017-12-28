@@ -19,8 +19,16 @@ const setCurrency = (currency) => {
   }
 };
 
+const setStats = (totalValue, payload) => {
+  return {
+    type: 'SET_TOTALVALUE',
+    payload: payload
+  }
+};
+
 export default {
   addCoin : addCoin,
   setCoins : setCoins,
-  setCurrency: setCurrency
+  setCurrency: setCurrency,
+  setStats: setStats
 }

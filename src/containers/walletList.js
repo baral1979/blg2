@@ -23,7 +23,6 @@ class WalletList extends Component {
     var url = window.location.origin + '/test';
     const resp = fetch(url).then((resp) => {
       resp.json().then((data) => {
-        console.log('data', data);
         this.props.setCoins(data);
       })
     });
@@ -86,7 +85,7 @@ class WalletList extends Component {
     return (
       <div>
       <Grid fluid>
-  
+
         <Row>
           {this.createWalletList()}
         </Row>
@@ -106,6 +105,6 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispath) {
-  return bindActionCreators({setCoins: actions.setCoins, setCurrency: actions.setCurrency}, dispath);
+  return bindActionCreators({setCoins: actions.setCoins, setCurrency: actions.setCurrency, setStats: actions.setStats}, dispath);
 }
 export default connect(mapStateToProps, mapDispatchToProps)(WalletList);

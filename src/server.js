@@ -81,48 +81,104 @@ app.use('/deposit/:currency', async (req, res, next) => {
       total += trx.Amount;
     }
     res.status(200);
-
     res.send(data.result);
   });
 });
 
 app.use('/test', async (req, res, next) => {
 
-  bittrex.getbalances(function(data, err) {
-    if (err) {
-      res.status(400);
-      res.send(err);
-    }
-    res.status(200);
-
-    if (data) {
-
-      var urls = [];
-      const grabContent = url => fetch(url).then(res => res.text()).then(html => {
-        var data = JSON.parse(html);
-        if (data.length === 1)
-          coins.set(data[0]);
-        }
-      )
-
-      for (var i = 0; i < data.result.length; i++) {
-        var bal = data.result[i];
-        var coin = coins.get(bal.Currency);
-        if (coin) {
-          var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
-          urls.push(url);
-        }
+  var dep = new Promise((resolve, reject) => {
+    bittrex.getdeposithistory({}, function( data, err ) {
+      if (err) {
+        reject(err);
       }
 
-      Promise.all(urls.map(grabContent)).then(() => {
-        coins.mergeBalances(data.result);
-        res.status(200);
-        res.json(coins.all());
-      });
-    } else
-      res.send('oups!');
+      resolve(data.result);
+    });
+  });
+
+  var bal = new Promise((resolve, reject) => {
+    bittrex.getbalances(function( data, err ) {
+      if (err) {
+        reject(err);
+      }
+
+      resolve(data.result);
+    });
+  });
+
+  Promise.all([dep, bal]).then((data) => {
+    var deposits = data[0];
+    var balances = data[1];
+
+    var urls = [];
+
+    const grabContent = url => fetch(url).then(res => res.text()).then(html => {
+      var data = JSON.parse(html);
+
+      if (data.length === 1)
+        coins.set(data[0]);
+      }
+    )
+
+    // get stats
+    for (var i = 0; i < balances.length; i++) {
+      var bal = balances[i];
+      var coin = coins.get(bal.Currency);
+      if (coin) {
+        var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
+        urls.push(url);
+      }
     }
-  );
+
+    Promise.all(urls.map(grabContent)).then((result) => {
+      coins.mergeBalances(balances);
+      coins.mergeDeposits(deposits);
+      res.status(200);
+      res.json(coins.all());
+    }).catch((err) => {
+      res.status(400);
+      res.json(err);
+    });
+
+  });
+
+
+  // bittrex.getbalances(function(data, err) {
+  //   if (err) {
+  //     res.status(400);
+  //     res.send(err);
+  //   }
+  //
+  //
+  //   if (data) {
+  //
+  //     var urls = [];
+  //     const grabContent = url => fetch(url).then(res => res.text()).then(html => {
+  //       var data = JSON.parse(html);
+  //       if (data.length === 1)
+  //         coins.set(data[0]);
+  //       }
+  //     )
+  //
+  //     for (var i = 0; i < data.result.length; i++) {
+  //       var bal = data.result[i];
+  //       var coin = coins.get(bal.Currency);
+  //       if (coin) {
+  //         var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
+  //         urls.push(url);
+  //       }
+  //     }
+  //
+  //     Promise.all(urls.map(grabContent)).then(() => {
+  //       coins.mergeBalances(data.result);
+  //       res.status(200);
+  //       res.json(coins.all());
+  //     });
+  //   } else
+  //     res.send('oups!');
+  //   }
+  // );
 });
 
 //

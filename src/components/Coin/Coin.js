@@ -7,20 +7,23 @@ import Amount from '../Amount';
 export class Coin extends Component{
 
     test() {
-    return (  <tr>
-      <td>
-        test
-      </td><td>
-        test
-      </td><td>
-        test
-      </td>
-      </tr>)
+
+      if (this.props.coin.deposits && this.props.coin.deposits.length > 0) {
+        return (<tr>
+          <td>
+            Mining Earnings
+          </td>
+            <td>{this.props.coin.mined_qty}</td>
+            <td><Amount currency={this.props.currency} value_usd={this.props.coin.mined_value_usd.toFixed(2)} value_btc={this.props.coin.mined_value_btc.toFixed(8)}/></td>
+          </tr>
+        )
+      }
+
+      return null;
     }
 
     render(){
         var coin = this.props.coin;
-        console.log(coin);
         return (
           <tbody key={coin.id}>
             <tr >

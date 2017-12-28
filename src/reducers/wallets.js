@@ -1,6 +1,8 @@
 const initialState = {
   wallets: [],
-  currency: 'USD'
+  currency: 'USD',
+  totalvalue_usd: 0,
+  totalmined_usd: 0
 }
 
 const reducer = (state = initialState, action) => {
@@ -12,9 +14,26 @@ const reducer = (state = initialState, action) => {
       }
       break;
     case "SET_COINS":
+      console.log(action.payload);
+      var totalusd = 0, totalbtc = 0, totalmined_usd = 0, totalmined_btc = 0;
+      for (var i = 0; i < action.payload.length; i++) {
+        totalusd += action.payload[i].value_usd;
+        totalbtc += action.payload[i].value_btc;
+        if (action.payload[i].mined_value_usd)
+          totalmined_usd += action.payload[i].mined_value_usd;
+        if (action.payload[i].mined_value_btc)
+          totalmined_btc += action.payload[i].mined_value_btc;
+      }
+
       state = {
         ...state,
-        wallets: action.payload
+        wallets: action.payload,
+        totalvalue_usd: totalusd.toFixed(2),
+        totalvalue_btc: totalbtc.toFixed(8),
+        totalmined_usd: totalmined_usd.toFixed(2),
+        totalmined_btc: totalmined_btc.toFixed(8),
+        totaltrade_usd: (totalusd-totalmined_usd).toFixed(2),
+        totaltrade_btc: (totalbtc-totalmined_btc).toFixed(8)
       };
       break;
     case "SET_CURRENCY":

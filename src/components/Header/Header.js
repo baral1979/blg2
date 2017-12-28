@@ -35,7 +35,7 @@ class Header extends Component{
     }
     render(){
         return (
-            <Navbar fluid>
+            <Navbar fluid className="navbar-ct-purple">
                 <Navbar.Header>
                     <Navbar.Brand>
                         <a href="#pablo">{this.getBrand()}</a>
@@ -43,7 +43,7 @@ class Header extends Component{
 
                 </Navbar.Header>
                 <Navbar.Collapse>
-                    <HeaderLinks />
+
                 </Navbar.Collapse>
             </Navbar>
         );
