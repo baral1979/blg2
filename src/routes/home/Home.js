@@ -18,7 +18,7 @@ class Home extends React.Component {
   render() {
     return (
       <div className="content">
-        <WalletList/>
+        <WalletList currency='USD'/>
       </div>
     );
   }

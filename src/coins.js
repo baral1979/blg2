@@ -13,6 +13,16 @@ const coins = [{
     symbol: "ETH"
   },
   {
+    id: "cardano",
+    name: "Cardano",
+    symbol: "ADA"
+  },
+  {
+    id: "bitcoin",
+    name: "Bitcoin",
+    symbol: "BTC"
+  },
+  {
     id: "nav-coin",
     name: "NavCoin",
     symbol: "NAV"
@@ -40,7 +50,7 @@ const set = function(data) {
     coin.price_btc = data.price_btc;
     coin.percent_change_1h = data.percent_change_1h;
     coin.percent_change_24h = data.percent_change_24h;
-    coin.percent_change_7d = data.percent_change_24h;
+    coin.percent_change_7d = data.percent_change_7d;
   };
 }
 

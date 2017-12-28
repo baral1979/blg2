@@ -12,8 +12,15 @@ const setCoins = (coins) => {
   }
 };
 
+const setCurrency = (currency) => {
+  return {
+    type: 'SET_CURRENCY',
+    payload: currency
+  }
+};
 
 export default {
   addCoin : addCoin,
-  setCoins : setCoins
+  setCoins : setCoins,
+  setCurrency: setCurrency
 }

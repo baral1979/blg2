@@ -1,6 +1,8 @@
 const initialState = {
-  wallets: []
+  wallets: [],
+  currency: 'USD'
 }
+
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case "ADD_COIN":
@@ -13,6 +15,12 @@ const reducer = (state = initialState, action) => {
       state = {
         ...state,
         wallets: action.payload
+      };
+      break;
+    case "SET_CURRENCY":
+      state = {
+        ...state,
+        currency: action.payload
       };
       break;
   }

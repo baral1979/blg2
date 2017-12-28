@@ -39,6 +39,10 @@
   to {
     -ms-transform: rotate(360deg); } }
 
+.table>tbody>tr>td {
+  border:0px solid red;
+}
+
 /*           Font Smoothing      */
 body,
 h1, .h1,
