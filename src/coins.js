@@ -8,6 +8,11 @@ const coins = [{
     symbol: "ZEC"
   },
   {
+    id: "zclassic",
+    name: "ZClassic",
+    symbol: "ZCL"
+  },
+  {
     id: "ethereum",
     name: "Ether",
     symbol: "ETH"
@@ -17,11 +22,11 @@ const coins = [{
     name: "Cardano",
     symbol: "ADA"
   },
-  // {
-  //   id: "bitcoin",
-  //   name: "Bitcoin",
-  //   symbol: "BTC"
-  // },
+  {
+    id: "komodo",
+    name: "Komodo",
+    symbol: "KMD"
+  },
   {
     id: "nav-coin",
     name: "NavCoin",
@@ -101,7 +106,7 @@ const mergeDeposits = function(data) {
 
     if (dt < new Date('2017-11-18'))
       continue;
-      
+
     var coin = get(dep.Currency);
     if (coin) {
       if (!coin.deposits)

@@ -26,9 +26,17 @@ const setStats = (totalValue, payload) => {
   }
 };
 
+const setMining = (mining) => {
+  return {
+    type: 'SET_MINING',
+    payload: mining
+  }
+};
+
 export default {
   addCoin : addCoin,
   setCoins : setCoins,
   setCurrency: setCurrency,
-  setStats: setStats
+  setStats: setStats,
+  setMining: setMining
 }

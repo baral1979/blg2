@@ -2,7 +2,8 @@ const initialState = {
   wallets: [],
   currency: 'USD',
   totalvalue_usd: 0,
-  totalmined_usd: 0
+  totalmined_usd: 0,
+  mining: []
 }
 
 const reducer = (state = initialState, action) => {
@@ -42,6 +43,11 @@ const reducer = (state = initialState, action) => {
         currency: action.payload
       };
       break;
+    case "SET_MINING":
+       state = {
+          ...state,
+          mining: action.payload
+      }
   }
 
   return state;

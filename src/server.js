@@ -85,6 +85,53 @@ app.use('/deposit/:currency', async (req, res, next) => {
   });
 });
 
+app.use('/mining', async (req, res, next) => {
+  var pools = ['zclassic', 'feathercoin', 'zencash'];
+
+  var urls = pools.map( p => {return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"});
+  const grabContent = url => fetch(url).then(res => res.text()).then(html => { return JSON.parse(html);});
+
+  Promise.all(urls.map(grabContent)).then((result) => {
+    res.status(200);
+    res.json(result);
+  }).catch((err) => {
+    res.status(400);
+    res.json(err);
+  });
+
+});
+
+app.use('/mph/:id', async (req, res, next) => {
+  var url = "https://" + req.params.id + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0";
+  var response = {};
+  fetch(url).then((resp) => resp.json()).then(function(data) {
+      if (data && data.getdashboarddata && data.getdashboarddata.data) {
+        var raw = data.getdashboarddata.data;
+
+        response = {
+          name: 'MiningPoolHub',
+          hashrate: {
+            personal: raw.personal.hashrate,
+            pool: raw.pool.hashrate,
+            network: raw.network.hashrate
+          },
+          balance: {
+            confirmed: raw.balance.confirmed,
+            unconfirmed: raw.balance.unconfirmed
+          }
+        };
+      }
+      res.status(200);
+      res.send(response);
+  }).catch(function(error) {
+    console.log('error', error);
+    // If there is any error you will catch them here
+    res.status(400);
+    res.send(error);
+  });
+
+})
+
 app.use('/test', async (req, res, next) => {
 
   var dep = new Promise((resolve, reject) => {

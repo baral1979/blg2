@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import actions from '../actions';
 import StatsCard from '../components/StatsCard';
 import WalletList from './walletList';
+import Mining from './mining';
 //import Percent from '../components/Percent';
 //import Card from '../components/Card';
 //import Coin from '../components/Coin';
@@ -51,6 +52,9 @@ class Stats extends Component {
                       statsIconText={this.props.totaltrade_btc}
                   />
                </Col>
+               <Col lg={3} sm={6}>
+                   <Mining />
+                </Col>
         </Row>
       </Grid>
     );

@@ -2,5 +2,5 @@
   "name": "Coin",
   "version": "0.0.0",
   "private": true,
-  "main": "./Coin.js"
+  "main": "./CoinTable.js"
 }
