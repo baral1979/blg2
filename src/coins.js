@@ -31,6 +31,10 @@ const coins = [{
     id: "nav-coin",
     name: "NavCoin",
     symbol: "NAV"
+  },{
+    id: "bitcoin",
+    name: "Bitcion",
+    symbol: "BTC"
   }, {
     id: "feathercoin",
     name: "FeatherCoin",
@@ -50,6 +54,9 @@ const coins = [{
 
 const set = function(data) {
   var coin = get(data.symbol);
+
+
+
 
   if (coin) {
     coin.price_usd = data.price_usd;
@@ -80,6 +87,9 @@ const mergeBalances = function(balances) {
 
 const mergeBalance = function(data) {
   var coin = get(data.Currency);
+
+  if (data.Currency === 'ZCL')
+    data.Balance -= 0.3917997208;
 
   if (coin) {
     coin.balance = data.Balance;
