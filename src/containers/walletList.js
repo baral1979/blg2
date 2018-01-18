@@ -53,6 +53,8 @@ class WalletList extends Component {
                           return -1;
                         return 0;
                       }).map((wallet) => {
+                        if (!wallet || wallet.balance <= 0 || !wallet.value_usd)
+                          return null;
                         return <Coin currency={this.props.currency} coin={wallet} />
                       })
                 }

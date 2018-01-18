@@ -6,6 +6,18 @@ import Amount from '../Amount';
 
 export class Coin extends Component{
 
+    getColor(source) {
+      var stringHexNumber = (                       // 1
+              parseInt(                                 // 2
+                  parseInt(source, 36)  // 3
+                      .toExponential()                  // 4
+                      .slice(2,-5)                      // 5
+              , 10) & 0xFFFFFF                          // 6
+          ).toString(16).toUpperCase();
+
+      return {background: '#' + stringHexNumber};
+    }
+
     test() {
 
       if (this.props.coin.mined_value_usd) {
@@ -27,7 +39,7 @@ export class Coin extends Component{
         return (
           <tbody key={coin.id}>
             <tr >
-              <td><img src={`https://files.coinmarketcap.com/static/img/coins/16x16/${coin.id}.png`}/></td>
+              <td><img src={`https://files.coinmarketcap.com/static/img/coins/16x16/${coin.id}.png`}/>{" "}<span className="label label-default" style={this.getColor(coin.source)}>{coin.source}</span></td>
               <td><Amount currency={this.props.currency} value_usd={coin.value_usd.toFixed(2)} value_btc={coin.value_btc.toFixed(8)}/></td>
               <td><Amount currency={this.props.currency} value_usd={coin.price_usd} value_btc={coin.price_btc}/></td>
             </tr>

@@ -29,8 +29,11 @@ import assets from './assets.json'; // eslint-disable-line import/no-unresolved
 import config from './config';
 import bittrex from 'node-bittrex-api';
 import coins from './coins';
+import twilio from 'twilio';
+import schedule from 'node-schedule';
 
-bittrex.options({'apikey': '12dbca8a9a0e45a680f41e57c10af730', 'apisecret': '7d0964f292c2479db0a8345b82437cf6'});
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
+bittrex.options({'apikey': process.env.BITTREX_APIKEY, 'apisecret': process.env.BITTREX_APISECRET});
 
 const app = express();
 
@@ -46,7 +49,7 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // -----------------------------------------------------------------------------
 app.use(express.static(path.resolve(__dirname, 'public')));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 //
@@ -71,9 +74,9 @@ app.use((err, req, res, next) => {
 if (__DEV__) {
   app.enable('trust proxy');
 }
-
+//(SELL|sell|Sell)
 app.use('/deposit/:currency', async (req, res, next) => {
-  bittrex.getdeposithistory({}, function( data, err ) {
+  bittrex.getdeposithistory({}, function(data, err) {
     var total = 0;
 
     for (var i = 0; i < data.result.length; i++) {
@@ -85,11 +88,73 @@ app.use('/deposit/:currency', async (req, res, next) => {
   });
 });
 
+const sendMessage = function (msg, phone) {
+  const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+  client.messages
+    .create({
+      to: phone,
+      from: '+14188008521',
+      body: msg,
+    })
+    .then(message => console.log(message.sid));
+};
+
+const sell = function(coin, phone) {
+  bittrex.getbalances(function(data, err) {
+    if (err) {
+      sendMessage('There was an error getting your ' + coin + ' balance on Bittrex!', phone);
+      return;
+    }
+
+    var w = data.result.filter((d) => { return d.Currency === coin;});
+    if (w && w.length === 1) {
+      console.log(w[0]);
+      sendMessage(`Alright! Selling ${w[0].Balance} ${w[0].Currency} !`, phone);
+      return;
+    }
+
+    sendMessage('Looks like you don\'t have any ' + coin + ' on Bittrex!', phone);
+  });
+  console.log('selling ' + coin);
+}
+
+app.post('/twiliomessage', (req, res) => {
+
+  var message = req.body.Body;
+  var regex = /(SELL|sell|Sell)|\b([A-Z]{3,4})\b/g;
+
+  var matches = [];
+  var match;
+  while ((match = regex.exec(message)) !== null) {
+    matches.push(match[0]);
+  }
+  console.log('matches', matches);
+
+  if (matches.length > 1 && matches[0].toLowerCase() === 'sell') {
+    sell(matches[1], req.body.From);
+    res.status(200);
+    res.end();
+    return;
+  }
+
+  const response = new MessagingResponse();
+  response.message(`Sorry I don't understand.. I'm just a bot!`);
+  res.set('Content-Type', 'text/xml');
+  res.send(response.toString());
+
+});
+
+
 app.use('/mining', async (req, res, next) => {
   var pools = ['zclassic', 'feathercoin', 'zencash'];
 
-  var urls = pools.map( p => {return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"});
-  const grabContent = url => fetch(url).then(res => res.text()).then(html => { return JSON.parse(html);});
+  var urls = pools.map(p => {
+    return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"
+  });
+  const grabContent = url => fetch(url).then(res => res.text()).then(html => {
+    return JSON.parse(html);
+  });
 
   Promise.all(urls.map(grabContent)).then((result) => {
     res.status(200);
@@ -105,24 +170,24 @@ app.use('/mph/:id', async (req, res, next) => {
   var url = "https://" + req.params.id + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0";
   var response = {};
   fetch(url).then((resp) => resp.json()).then(function(data) {
-      if (data && data.getdashboarddata && data.getdashboarddata.data) {
-        var raw = data.getdashboarddata.data;
+    if (data && data.getdashboarddata && data.getdashboarddata.data) {
+      var raw = data.getdashboarddata.data;
 
-        response = {
-          name: 'MiningPoolHub',
-          hashrate: {
-            personal: raw.personal.hashrate,
-            pool: raw.pool.hashrate,
-            network: raw.network.hashrate
-          },
-          balance: {
-            confirmed: raw.balance.confirmed,
-            unconfirmed: raw.balance.unconfirmed
-          }
-        };
-      }
-      res.status(200);
-      res.send(response);
+      response = {
+        name: 'MiningPoolHub',
+        hashrate: {
+          personal: raw.personal.hashrate,
+          pool: raw.pool.hashrate,
+          network: raw.network.hashrate
+        },
+        balance: {
+          confirmed: raw.balance.confirmed,
+          unconfirmed: raw.balance.unconfirmed
+        }
+      };
+    }
+    res.status(200);
+    res.send(response);
   }).catch(function(error) {
     console.log('error', error);
     // If there is any error you will catch them here
@@ -135,7 +200,7 @@ app.use('/mph/:id', async (req, res, next) => {
 app.use('/test', async (req, res, next) => {
 
   var dep = new Promise((resolve, reject) => {
-    bittrex.getdeposithistory({}, function( data, err ) {
+    bittrex.getdeposithistory({}, function(data, err) {
       if (err) {
         reject(err);
       }
@@ -145,7 +210,7 @@ app.use('/test', async (req, res, next) => {
   });
 
   var bal = new Promise((resolve, reject) => {
-    bittrex.getbalances(function( data, err ) {
+    bittrex.getbalances(function(data, err) {
       if (err) {
         reject(err);
       }
@@ -158,10 +223,19 @@ app.use('/test', async (req, res, next) => {
     var deposits = data[0];
     var balances = data[1];
 
+    for (var i = 0; i < data[1].length; i++) {
+      data[1][i].Source = 'Bittrex';
+    }
+
+
+    balances = data[1].concat(coins.coinsToAdd);
+
+
     var urls = [];
 
     const grabContent = url => fetch(url).then(res => res.text()).then(html => {
       var data = JSON.parse(html);
+
 
       if (data.length === 1)
         coins.set(data[0]);
@@ -189,7 +263,6 @@ app.use('/test', async (req, res, next) => {
     });
 
   });
-
 
   // bittrex.getbalances(function(data, err) {
   //   if (err) {
@@ -319,9 +392,9 @@ app.use((err, req, res, next) => {
 //const promise = models.sync().catch(err => console.error(err.stack));
 if (!module.hot) {
   //promise.then(() => {
-    app.listen(config.port, () => {
-      console.info(`The server is running at http://localhost:${config.port}/`);
-    });
+  app.listen(config.port, () => {
+    console.info(`The server is running at http://localhost:${config.port}/`);
+  });
   //});
 }
 
@@ -332,5 +405,14 @@ if (module.hot) {
   app.hot = module.hot;
   module.hot.accept('./router');
 }
+
+var j = schedule.scheduleJob('*/1 * * * *', function() {
+  var url = `https://api.coinmarketcap.com/v1/ticker/cardano`;
+
+  fetch(url).then(res => res.text()).then(html => {
+    var data = JSON.parse(html);
+    console.log(data);
+  });
+});
 
 export default app;

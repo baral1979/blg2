@@ -23,6 +23,11 @@ const coins = [{
     symbol: "ADA"
   },
   {
+    id: "achain",
+    name: "Achain",
+    symbol: "ACT"
+  },
+  {
     id: "komodo",
     name: "Komodo",
     symbol: "KMD"
@@ -52,11 +57,18 @@ const coins = [{
   }
 ];
 
+const coinsToAdd = [
+  {
+    Currency: 'ACT',
+    Balance: 456.8935,
+    Pending: 0,
+    Available: 0,
+    Source: 'Kucoin'
+  }
+]
+
 const set = function(data) {
   var coin = get(data.symbol);
-
-
-
 
   if (coin) {
     coin.price_usd = data.price_usd;
@@ -65,6 +77,7 @@ const set = function(data) {
     coin.percent_change_24h = data.percent_change_24h;
     coin.percent_change_7d = data.percent_change_7d;
   };
+
 }
 
 const get = function(symbol) {
@@ -95,6 +108,7 @@ const mergeBalance = function(data) {
     coin.balance = data.Balance;
     coin.pending = data.Pending;
     coin.address = data.CryptoAddress;
+    coin.source = data.Source;
     coin.value_usd = (coin.balance + coin.pending) * coin.price_usd;
     coin.value_btc = (coin.balance + coin.pending) * coin.price_btc;
   };
@@ -153,5 +167,6 @@ export default {
   mergeDeposits: mergeDeposits,
   all: function() {
     return coins;
-  }
+  },
+  coinsToAdd: coinsToAdd
 }
