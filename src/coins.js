@@ -115,7 +115,7 @@ const mergeBalance = function(data) {
   var coin = get(data.Currency);
 
   if (data.Currency === 'ZCL')
-    data.Balance -= 0.3917997208;
+    data.Balance -= 0.7403719108;
 
   if (coin) {
     coin.balance = data.Balance;
