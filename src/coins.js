@@ -54,13 +54,26 @@ const coins = [{
     id: "stellar",
     name: "Stellar Lumen",
     symbol: "XLM"
+  },
+  {
+    id: "raiblocks",
+    name: "RaiBlocks",
+    symbol: "XRB"
   }
+
 ];
 
 const coinsToAdd = [
   {
     Currency: 'ACT',
-    Balance: 456.8935,
+    Balance: 19.74235, // 456.8935, //
+    Pending: 0,
+    Available: 0,
+    Source: 'Kucoin'
+  },
+  {
+    Currency: 'XRB',
+    Balance: 12.77133089,
     Pending: 0,
     Available: 0,
     Source: 'Kucoin'
