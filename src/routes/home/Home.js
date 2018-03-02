@@ -12,8 +12,9 @@ import PropTypes from 'prop-types';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Home.css';
 import WalletList from '../../containers/walletList';
-import Mining from '../../containers/mining';
+import Pools from '../../containers/pools';
 import Stats from '../../containers/stats';
+import Electricity from '../../containers/electricity';
 import { Table, Grid, Row, Col } from 'react-bootstrap';
 class Home extends React.Component {
 
@@ -21,8 +22,9 @@ class Home extends React.Component {
     return (
       <div className="content">
         <Stats />
-       
         <WalletList />
+        <Pools/>
+        <Electricity />
       </div>
     );
   }

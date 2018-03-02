@@ -1,13 +1,13 @@
 import React, { Component } from 'React';
 import { bindActionCreators } from 'redux';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import actions from '../actions';
 import StatsCard from '../components/StatsCard';
 import Percent from '../components/Percent';
 import Card from '../components/Card';
 import Coin from '../components/Coin';
 import Amount from '../components/Amount';
-import { Grid, Row, Col, Table  } from 'react-bootstrap';
+import { Grid, Row, Col, Table } from 'react-bootstrap';
 import ChartistGraph from 'react-chartist';
 
 class WalletList extends Component {
@@ -29,34 +29,34 @@ class WalletList extends Component {
   }
 
   createWalletList() {
-      return (
-        <div className="coins">
-                  <Table>
-                        <thead>
-                            <tr>
+    return (
+      <div className="coins">
+        <Table>
+          <thead>
+            <tr>
 
-                              <th className="text-center" width='10%'>Coin</th>
-                              <th className="text-right" width='40%'>Holdings</th>
-                              <th className="text-right">Price</th>
+              <th className="text-center" width='10%'>Coin</th>
+              <th className="text-right" width='40%'>Holdings</th>
+              <th className="text-right">Price</th>
 
-                            </tr>
-                        </thead>
-                        {
-                      this.props.wallets.sort((a,b) => {
-                        if (a.value_usd < b.value_usd)
-                          return 1;
-                        if (a.value_usd > b.value_usd)
-                          return -1;
-                        return 0;
-                      }).map((wallet) => {
-                        if (!wallet || wallet.balance <= 0 || !wallet.value_usd)
-                          return null;
-                        return <Coin currency={this.props.currency} coin={wallet} />
-                      })
-                }
-                 </Table>}
-            /></div>
-      )
+            </tr>
+          </thead>
+          {
+            this.props.wallets.sort((a, b) => {
+              if (a.value_usd < b.value_usd)
+                return 1;
+              if (a.value_usd > b.value_usd)
+                return -1;
+              return 0;
+            }).map((wallet) => {
+              if (!wallet || wallet.balance <= 0 || !wallet.value_usd)
+                return null;
+              return <Coin key={wallet.symbol} currency={this.props.currency} coin={wallet} />
+            })
+          }
+        </Table>}
+            </div>
+    )
   }
 
 
@@ -81,7 +81,7 @@ class WalletList extends Component {
 
   render() {
     return (
-        this.createWalletList()
+      this.createWalletList()
     );
   }
 }
@@ -94,6 +94,6 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispath) {
-  return bindActionCreators({setCoins: actions.setCoins, setCurrency: actions.setCurrency, setStats: actions.setStats}, dispath);
+  return bindActionCreators({ setCoins: actions.setCoins, setCurrency: actions.setCurrency, setStats: actions.setStats }, dispath);
 }
 export default connect(mapStateToProps, mapDispatchToProps)(WalletList);

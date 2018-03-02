@@ -20,7 +20,7 @@ class Mining extends Component {
   }
 
   componentDidMount() {
-    var url = window.location.origin + '/mining';
+    var url = window.location.origin + '/pools';
     const resp = fetch(url).then((resp) => {
       resp.json().then((data) => {
         this.props.setMining(data);
@@ -56,7 +56,6 @@ class Mining extends Component {
             statsIconText={`C: ${data.balance.confirmed}  U: ${data.balance.unconfirmed} `}
         />);
       });
-
   }
 
   render() {

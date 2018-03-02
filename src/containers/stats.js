@@ -29,7 +29,6 @@ class Stats extends Component {
             <Amount onClick={this.handleCurrencyChange.bind(this)} currency={this.props.currency} value_usd={this.props.totalvalue_usd} value_btc={this.props.totalvalue_btc} />
           </div>
         </div>
-        
       </div>
     );
   }

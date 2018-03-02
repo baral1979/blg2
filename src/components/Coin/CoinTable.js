@@ -40,13 +40,13 @@ export class Coin extends Component {
   // </tr>
   render() {
     var coin = this.props.coin;
-    console.log('coin', coin);
+    
     return (
       <tbody key={coin.id}>
         <tr >
           <td className="text-center"><img src={`/assets/img/${coin.symbol.toLowerCase()}.png`} />
-            <br /
-            ><span className="coin-symbol">{coin.symbol}</span>
+            <br />
+            <span className="coin-symbol">{coin.symbol}</span>
           </td>
           <td className="text-right">
             <Amount currency={this.props.currency} value_usd={coin.value_usd.toFixed(2)} value_btc={coin.value_btc.toFixed(8)} />
@@ -56,7 +56,7 @@ export class Coin extends Component {
           <td className="text-right">
             <Amount currency={this.props.currency} value_usd={coin.price_usd} value_btc={coin.price_btc} />
             <br />
-            <Percent value={coin.percent_change_24h}/>
+            <Percent value={coin.percent_change_24h} />
           </td>
         </tr>
       </tbody>

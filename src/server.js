@@ -29,6 +29,7 @@ import assets from './assets.json'; // eslint-disable-line import/no-unresolved
 import config from './config';
 import bittrex from 'node-bittrex-api';
 import coins from './coins';
+import electricity from './electricity';
 import twilio from 'twilio';
 import schedule from 'node-schedule';
 
@@ -122,62 +123,109 @@ const sell = function (coin, phone) {
 //
 // Mining Details
 // -----------------------------------------------------------------------------
-app.use('/mining', async (req, res, next) => {
+app.use('/pools', async (req, res, next) => {
+
+  // MiningPoolHub
   var pools = ['zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
 
   var urls = pools.map(p => {
     return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"
   });
+
   const grabContent = url => fetch(url).then(res => res.text()).then(html => {
     return JSON.parse(html);
   });
 
-  Promise.all(urls.map(grabContent)).then((result) => {
-    res.status(200);
-    res.json(result);
+  // Yiimp
+  var yiimp = new Promise((resolve, reject) => {
+    var t = fetch('http://yiimp.eu/site/title_results?address=DNx8YKJp7JzVXmXRCs4gzdMoxTqnD1o68w').then(res => res.text()).then(html => {
+      resolve(html);
+    }).catch((err) => { reject(err) });
+  });
+
+  Promise.all(urls.map(grabContent).concat(yiimp)).then((result) => {
+    var pools = result.slice(0, result.length - 1).map(function (x) {
+      return {
+        balance: x.getdashboarddata.data.balance.confirmed + x.getdashboarddata.data.balance.unconfirmed,
+        symbol: x.getdashboarddata.data.pool.info.currency,
+        pool: 'MiningPoolHub'
+      };
+    });
+
+    try {
+      var yimp = result[result.length - 1];
+      var xvgBalance = parseFloat(yimp.split('-')[0].replace('XVG', ''));
+
+      pools.push(
+        {
+          balance: xvgBalance,
+          symbol: 'XVG',
+          pool: 'YiiMP'
+        }
+      )
+    } catch (error) {
+
+    }
+
+    // Get Prices on coinmarketcap
+    const getPrice = url => fetch(url).then(res => res.text()).then(html => {
+      var data = JSON.parse(html);
+      if (data.length === 1)
+        coins.set(data[0]);
+    });
+
+    var urls = [];
+    for (let index = 0; index < pools.length; index++) {
+      const element = pools[index];
+      var coin = coins.get(element.symbol);
+      if (coin) {
+        var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
+        urls.push(url);
+      }
+    }
+
+    Promise.all(urls.map(grabContent)).then((result) => {
+      for (let index = 0; index < pools.length; index++) {
+        const pool = pools[index];
+        var stats = result.filter(x => { return x[0].symbol === pool.symbol });
+        if (stats && stats.length > 0 && stats[0] && stats[0].length) {
+          pool.value_usd = pool.balance * parseFloat(stats[0][0].price_usd);
+          pool.value_btc = pool.balance * parseFloat(stats[0][0].price_btc);
+          pool.price_usd = stats[0][0].price_usd;
+          pool.price_btc = stats[0][0].price_btc;
+          pool.percent_change_24h = stats[0][0].percent_change_24h;
+        }
+      }
+
+      res.status(200);
+      res.json(pools);
+    }).catch((err) => {
+      res.status(400);
+      res.json(err);
+    });
+
+    console.log(urls);
+
+
   }).catch((err) => {
     res.status(400);
     res.json(err);
   });
-
 });
 
-app.use('/mph/:id', async (req, res, next) => {
-  var url = "https://" + req.params.id + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0";
-  var response = {};
-  fetch(url).then((resp) => resp.json()).then(function (data) {
-    if (data && data.getdashboarddata && data.getdashboarddata.data) {
-      var raw = data.getdashboarddata.data;
 
-      response = {
-        name: 'MiningPoolHub',
-        hashrate: {
-          personal: raw.personal.hashrate,
-          pool: raw.pool.hashrate,
-          network: raw.network.hashrate
-        },
-        balance: {
-          confirmed: raw.balance.confirmed,
-          unconfirmed: raw.balance.unconfirmed
-        }
-      };
-    }
-    res.status(200);
-    res.send(response);
-  }).catch(function (error) {
-    console.log('error', error);
-    // If there is any error you will catch them here
-    res.status(400);
-    res.send(error);
-  });
 
-})
+app.use('/electricity', async (req, res, next) => {
+  res.status(200);
+  res.json(electricity.electricity);
+});
 
 app.use('/test', async (req, res, next) => {
   var dep = new Promise((resolve, reject) => {
     try {
       if (process.env.BITTREX_APIKEY === undefined)
         reject({ error: 'Exchange not properly configured' });
+
       bittrex.getdeposithistory({}, function (data, err) {
         if (err) {
           reject(err);
@@ -215,20 +263,18 @@ app.use('/test', async (req, res, next) => {
         data[1][i].Source = 'Bittrex';
       }
 
-
       balances = data[1].concat(coins.coinsToAdd);
-
-
       var urls = [];
 
       const grabContent = url => fetch(url).then(res => res.text()).then(html => {
         var data = JSON.parse(html);
-        console.log(url, data);
-        if (data.length === 1)
-          coins.set(data[0]);
-      }
-      )
 
+        if (data.length === 1) {
+          coins.set(data[0]);
+        }
+      });
+      
+      //console.log(deposits);
       // get stats
       for (var i = 0; i < balances.length; i++) {
         var bal = balances[i];

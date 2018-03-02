@@ -26,10 +26,18 @@ const setStats = (totalValue, payload) => {
   }
 };
 
-const setMining = (mining) => {
+const setElectricity = (electricity) => {
+  console.log('setElectricitysetElectricitysetElectricitysetElectricitysetElectricitysetElectricity')
   return {
-    type: 'SET_MINING',
-    payload: mining
+    type: 'SET_ELECT',
+    payload: electricity
+  }
+};
+
+const setPoolBalances = (balances) => {
+  return {
+    type: 'SET_POOL_BALANCES',
+    payload: balances
   }
 };
 
@@ -38,5 +46,6 @@ export default {
   setCoins : setCoins,
   setCurrency: setCurrency,
   setStats: setStats,
-  setMining: setMining
+  setPoolBalances,
+  setElectricity
 }

@@ -1,71 +1,75 @@
 const coins = [{
-    id: "zencash",
-    name: "ZenCash",
-    symbol: "ZEN"
-  }, {
-    id: "zcash",
-    name: "Zcash",
-    symbol: "ZEC"
-  },
-  {
-    id: "zclassic",
-    name: "ZClassic",
-    symbol: "ZCL"
-  },
-  {
-    id: "ethereum",
-    name: "Ether",
-    symbol: "ETH"
-  },
-  {
-    id: "cardano",
-    name: "Cardano",
-    symbol: "ADA"
-  },
-  {
-    id: "achain",
-    name: "Achain",
-    symbol: "ACT"
-  },
-  {
-    id: "komodo",
-    name: "Komodo",
-    symbol: "KMD"
-  },
-  {
-    id: "nav-coin",
-    name: "NavCoin",
-    symbol: "NAV"
-  },{
-    id: "bitcoin",
-    name: "Bitcion",
-    symbol: "BTC"
-  }, {
-    id: "feathercoin",
-    name: "FeatherCoin",
-    symbol: "FTC"
-  },
-  {
-    id: "vertcoin",
-    name: "VertCoin",
-    symbol: "VTC"
-  },
-  {
-    id: "stellar",
-    name: "Stellar Lumen",
-    symbol: "XLM"
-  },
-  {
-    id: "nano",
-    name: "Nano",
-    symbol: "NANO"
-  },
-  {
-    id: "bitcoin-gold",
-    name: "Bitcoin Gold",
-    symbol: "BTG"
-  }
-
+  id: "zencash",
+  name: "ZenCash",
+  symbol: "ZEN"
+}, {
+  id: "zcash",
+  name: "Zcash",
+  symbol: "ZEC"
+},
+{
+  id: "zclassic",
+  name: "ZClassic",
+  symbol: "ZCL"
+},
+{
+  id: "ethereum",
+  name: "Ether",
+  symbol: "ETH"
+},
+{
+  id: "cardano",
+  name: "Cardano",
+  symbol: "ADA"
+},
+{
+  id: "achain",
+  name: "Achain",
+  symbol: "ACT"
+},
+{
+  id: "komodo",
+  name: "Komodo",
+  symbol: "KMD"
+},
+{
+  id: "nav-coin",
+  name: "NavCoin",
+  symbol: "NAV"
+}, {
+  id: "bitcoin",
+  name: "Bitcion",
+  symbol: "BTC"
+}, {
+  id: "feathercoin",
+  name: "FeatherCoin",
+  symbol: "FTC"
+},
+{
+  id: "vertcoin",
+  name: "VertCoin",
+  symbol: "VTC"
+},
+{
+  id: "stellar",
+  name: "Stellar Lumen",
+  symbol: "XLM"
+},
+{
+  id: "nano",
+  name: "Nano",
+  symbol: "NANO"
+},
+{
+  id: "bitcoin-gold",
+  name: "Bitcoin Gold",
+  symbol: "BTG"
+},
+{
+  id: "verge",
+  name: "Verge",
+  symbol: "XVG"
+},
 ];
 
 const coinsToAdd = [
@@ -85,7 +89,7 @@ const coinsToAdd = [
   },
   {
     Currency: 'ZCL',
-    Balance: 6.5,
+    Balance: 6.5640154,
     Pending: 0,
     Available: 0,
     Source: 'Alex/TradeSatoshi'
@@ -96,11 +100,19 @@ const coinsToAdd = [
     Pending: 0,
     Available: 0,
     Source: 'Kucoin'
+  },
+  {
+    Currency: 'BTCP',
+    Balance: 8.25,
+    Pending: 0,
+    Available: 0,
+    Source: 'N/A'
   }
-  
+
+
 ]
 
-const set = function(data) {
+const set = function (data) {
   var coin = get(data.symbol);
 
   if (coin) {
@@ -110,11 +122,10 @@ const set = function(data) {
     coin.percent_change_24h = data.percent_change_24h;
     coin.percent_change_7d = data.percent_change_7d;
     coin.rank = data.rank;
-  };
-
+  }
 }
 
-const get = function(symbol) {
+const get = function (symbol) {
 
   var data = coins.filter((x) => {
     return x.symbol === symbol;
@@ -126,15 +137,14 @@ const get = function(symbol) {
   return null;
 }
 
-const mergeBalances = function(balances) {
+const mergeBalances = function (balances) {
   for (var i = 0; i < balances.length; i++) {
     mergeBalance(balances[i]);
   }
 }
 
-const mergeBalance = function(data) {
+const mergeBalance = function (data) {
   var coin = get(data.Currency);
-
   if (coin) {
     coin.balance = data.Balance;
     coin.pending = data.Pending;
@@ -142,17 +152,33 @@ const mergeBalance = function(data) {
     coin.source = data.Source;
     coin.value_usd = (coin.balance + coin.pending) * coin.price_usd;
     coin.value_btc = (coin.balance + coin.pending) * coin.price_btc;
-  };
+  } else {
+
+    if (data.Currency === 'BTCP') {
+      var usd = 11.1, btc = 0.001
+      coins.push({
+        symbol: 'BTCP',
+        percent_change_24h: 0,
+        balance: data.Balance,
+        pending: data.Pending,
+        address: data.CryptoAddress,
+        price_usd: usd,
+        price_btc: btc,
+        source: data.Source,
+        value_usd: (data.Balance + data.Pending) * usd,
+        value_btc: (data.Balance + data.Pending) * btc
+      });
+      
+    }
+  }
 }
 
-const mergeDeposits = function(data) {
-
-
+const mergeDeposits = function (data) {
   for (var i = 0; i < coins.length; i++) {
     if (!coins[i].deposits)
       continue;
 
-      coins[i].deposits = [];
+    coins[i].deposits = [];
   }
 
   for (var i = 0; i < data.length; i++) {
@@ -196,7 +222,7 @@ export default {
   set: set,
   mergeBalances: mergeBalances,
   mergeDeposits: mergeDeposits,
-  all: function() {
+  all: function () {
     return coins;
   },
   coinsToAdd: coinsToAdd
