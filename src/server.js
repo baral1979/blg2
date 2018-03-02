@@ -11,7 +11,7 @@ import path from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
-import expressJwt, {UnauthorizedError as Jwt401Error} from 'express-jwt';
+import expressJwt, { UnauthorizedError as Jwt401Error } from 'express-jwt';
 // import expressGraphQL from 'express-graphql';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -20,7 +20,7 @@ import ReactDOM from 'react-dom/server';
 import PrettyError from 'pretty-error';
 import App from './components/App';
 import Html from './components/Html';
-import {ErrorPageWithoutStyle} from './routes/error/ErrorPage';
+import { ErrorPageWithoutStyle } from './routes/error/ErrorPage';
 import errorPageStyle from './routes/error/ErrorPage.css';
 import createFetch from './createFetch';
 import router from './router';
@@ -33,7 +33,7 @@ import twilio from 'twilio';
 import schedule from 'node-schedule';
 
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-bittrex.options({'apikey': process.env.BITTREX_APIKEY, 'apisecret': process.env.BITTREX_APISECRET});
+bittrex.options({ 'apikey': process.env.BITTREX_APIKEY, 'apisecret': process.env.BITTREX_APISECRET });
 
 const app = express();
 
@@ -49,7 +49,7 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // -----------------------------------------------------------------------------
 app.use(express.static(path.resolve(__dirname, 'public')));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //
@@ -59,7 +59,7 @@ app.use(expressJwt({
   secret: config.auth.jwt.secret,
   credentialsRequired: false,
   getToken: req => req.cookies.id_token
-}),);
+}), );
 // Error handler for express-jwt
 app.use((err, req, res, next) => {
   // eslint-disable-line no-unused-vars
@@ -76,7 +76,7 @@ if (__DEV__) {
 }
 //(SELL|sell|Sell)
 app.use('/deposit/:currency', async (req, res, next) => {
-  bittrex.getdeposithistory({}, function(data, err) {
+  bittrex.getdeposithistory({}, function (data, err) {
     var total = 0;
 
     for (var i = 0; i < data.result.length; i++) {
@@ -100,14 +100,14 @@ const sendMessage = function (msg, phone) {
     .then(message => console.log(message.sid));
 };
 
-const sell = function(coin, phone) {
-  bittrex.getbalances(function(data, err) {
+const sell = function (coin, phone) {
+  bittrex.getbalances(function (data, err) {
     if (err) {
       sendMessage('There was an error getting your ' + coin + ' balance on Bittrex!', phone);
       return;
     }
 
-    var w = data.result.filter((d) => { return d.Currency === coin;});
+    var w = data.result.filter((d) => { return d.Currency === coin; });
     if (w && w.length === 1) {
       console.log(w[0]);
       sendMessage(`Alright! Selling ${w[0].Balance} ${w[0].Currency} !`, phone);
@@ -118,6 +118,8 @@ const sell = function(coin, phone) {
   });
   console.log('selling ' + coin);
 }
+
+
 
 app.post('/twiliomessage', (req, res) => {
 
@@ -145,9 +147,16 @@ app.post('/twiliomessage', (req, res) => {
 
 });
 
+app.use('/data', async (req, res, next) => {
+  if (process.env.BITTREX_APIKEY === undefined)
+    console.log('FY');
+  console.log(process.env.BITTREX_APIKEY);
+  res.status(200);
+  res.send({ key: process.env.BITTREX_APIKEY });
+});
 
 app.use('/mining', async (req, res, next) => {
-  var pools = ['zclassic', 'feathercoin', 'zencash'];
+  var pools = ['zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
 
   var urls = pools.map(p => {
     return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"
@@ -169,7 +178,7 @@ app.use('/mining', async (req, res, next) => {
 app.use('/mph/:id', async (req, res, next) => {
   var url = "https://" + req.params.id + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0";
   var response = {};
-  fetch(url).then((resp) => resp.json()).then(function(data) {
+  fetch(url).then((resp) => resp.json()).then(function (data) {
     if (data && data.getdashboarddata && data.getdashboarddata.data) {
       var raw = data.getdashboarddata.data;
 
@@ -188,7 +197,7 @@ app.use('/mph/:id', async (req, res, next) => {
     }
     res.status(200);
     res.send(response);
-  }).catch(function(error) {
+  }).catch(function (error) {
     console.log('error', error);
     // If there is any error you will catch them here
     res.status(400);
@@ -198,107 +207,89 @@ app.use('/mph/:id', async (req, res, next) => {
 })
 
 app.use('/test', async (req, res, next) => {
-
   var dep = new Promise((resolve, reject) => {
-    bittrex.getdeposithistory({}, function(data, err) {
-      if (err) {
-        reject(err);
-      }
+    try {
+      if (process.env.BITTREX_APIKEY === undefined)
+        reject({ error: 'Exchange not properly configured' });
+      bittrex.getdeposithistory({}, function (data, err) {
+        if (err) {
+          reject(err);
+        }
 
-      resolve(data.result);
-    });
+        resolve(data.result);
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 
   var bal = new Promise((resolve, reject) => {
-    bittrex.getbalances(function(data, err) {
-      if (err) {
-        reject(err);
-      }
+    try {
+      if (process.env.BITTREX_APIKEY === undefined)
+        reject({ error: 'Exchange not properly configured' });
+      bittrex.getbalances(function (data, err) {
+        if (err) {
+          reject(err);
+        }
 
-      resolve(data.result);
-    });
+        resolve(data.result);
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 
-  Promise.all([dep, bal]).then((data) => {
-    var deposits = data[0];
-    var balances = data[1];
+  try {
+    Promise.all([dep, bal]).then((data) => {
+      var deposits = data[0];
+      var balances = data[1];
 
-    for (var i = 0; i < data[1].length; i++) {
-      data[1][i].Source = 'Bittrex';
-    }
-
-
-    balances = data[1].concat(coins.coinsToAdd);
-
-
-    var urls = [];
-
-    const grabContent = url => fetch(url).then(res => res.text()).then(html => {
-      var data = JSON.parse(html);
-
-
-      if (data.length === 1)
-        coins.set(data[0]);
+      for (var i = 0; i < data[1].length; i++) {
+        data[1][i].Source = 'Bittrex';
       }
-    )
 
-    // get stats
-    for (var i = 0; i < balances.length; i++) {
-      var bal = balances[i];
-      var coin = coins.get(bal.Currency);
-      if (coin) {
-        var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
-        urls.push(url);
+
+      balances = data[1].concat(coins.coinsToAdd);
+
+
+      var urls = [];
+
+      const grabContent = url => fetch(url).then(res => res.text()).then(html => {
+        var data = JSON.parse(html);
+        console.log(url, data);
+        if (data.length === 1)
+          coins.set(data[0]);
       }
-    }
+      )
 
-    Promise.all(urls.map(grabContent)).then((result) => {
-      coins.mergeBalances(balances);
-      coins.mergeDeposits(deposits);
-      res.status(200);
-      res.json(coins.all());
+      // get stats
+      for (var i = 0; i < balances.length; i++) {
+        var bal = balances[i];
+        var coin = coins.get(bal.Currency);
+        if (coin) {
+          var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
+          urls.push(url);
+        }
+      }
+
+      Promise.all(urls.map(grabContent)).then((result) => {
+        coins.mergeBalances(balances);
+        coins.mergeDeposits(deposits);
+        res.status(200);
+        res.json(coins.all());
+      }).catch((err) => {
+        res.status(400);
+        res.json(err);
+      });
+
     }).catch((err) => {
       res.status(400);
       res.json(err);
     });
-
-  });
-
-  // bittrex.getbalances(function(data, err) {
-  //   if (err) {
-  //     res.status(400);
-  //     res.send(err);
-  //   }
-  //
-  //
-  //   if (data) {
-  //
-  //     var urls = [];
-  //     const grabContent = url => fetch(url).then(res => res.text()).then(html => {
-  //       var data = JSON.parse(html);
-  //       if (data.length === 1)
-  //         coins.set(data[0]);
-  //       }
-  //     )
-  //
-  //     for (var i = 0; i < data.result.length; i++) {
-  //       var bal = data.result[i];
-  //       var coin = coins.get(bal.Currency);
-  //       if (coin) {
-  //         var url = `https://api.coinmarketcap.com/v1/ticker/${coin.id}`;
-  //         urls.push(url);
-  //       }
-  //     }
-  //
-  //     Promise.all(urls.map(grabContent)).then(() => {
-  //       coins.mergeBalances(data.result);
-  //       res.status(200);
-  //       res.json(coins.all());
-  //     });
-  //   } else
-  //     res.send('oups!');
-  //   }
-  // );
+  } catch (error) {
+    res.status(400);
+    res.send({ error: error });
+  }
 });
 
 //
@@ -338,7 +329,7 @@ app.get('*', async (req, res, next) => {
     const data = {
       ...route
     };
-    data.children = ReactDOM.renderToString(<App context={context}>{route.component}</App>,);
+    data.children = ReactDOM.renderToString(<App context={context}>{route.component}</App>, );
     data.styles = [
       {
         id: 'css',
@@ -354,7 +345,7 @@ app.get('*', async (req, res, next) => {
       apiUrl: config.api.clientUrl
     };
 
-    const html = ReactDOM.renderToStaticMarkup(<Html {...data}/>);
+    const html = ReactDOM.renderToStaticMarkup(<Html {...data} />);
     res.status(route.status || 200);
     res.send(`<!doctype html>${html}`);
   } catch (err) {
@@ -373,15 +364,15 @@ pe.skipPackage('express');
 app.use((err, req, res, next) => {
   console.error(pe.render(err));
   const html = ReactDOM.renderToStaticMarkup(<Html title="Internal Server Error" description={err.message} styles={[{
-        id: 'css',
-        cssText: errorPageStyle._getCss()
-      }
-    ]}
-    // eslint-disable-line no-underscore-dangle
+    id: 'css',
+    cssText: errorPageStyle._getCss()
+  }
+  ]}
+  // eslint-disable-line no-underscore-dangle
 
->
-    {ReactDOM.renderToString(<ErrorPageWithoutStyle error={err}/>)}
-  </Html>,);
+  >
+    {ReactDOM.renderToString(<ErrorPageWithoutStyle error={err} />)}
+  </Html>, );
   res.status(err.status || 500);
   res.send(`<!doctype html>${html}`);
 });
@@ -405,14 +396,5 @@ if (module.hot) {
   app.hot = module.hot;
   module.hot.accept('./router');
 }
-
-var j = schedule.scheduleJob('*/1 * * * *', function() {
-  var url = `https://api.coinmarketcap.com/v1/ticker/cardano`;
-
-  fetch(url).then(res => res.text()).then(html => {
-    var data = JSON.parse(html);
-    console.log(data);
-  });
-});
 
 export default app;

@@ -15,7 +15,7 @@ const reducer = (state = initialState, action) => {
       }
       break;
     case "SET_COINS":
-      console.log('coins', action.payload);
+      
       var totalusd = 0, totalbtc = 0, totalmined_usd = 0, totalmined_btc = 0;
       for (var i = 0; i < action.payload.length; i++) {
 

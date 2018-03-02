@@ -55,6 +55,7 @@ class Html extends React.Component {
               dangerouslySetInnerHTML={{ __html: style.cssText }}
             />
           ))}
+          <link href="https://fonts.googleapis.com/css?family=Noto+Sans|Saira+Condensed" rel="stylesheet"/>
           <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
           <link href="/assets/animate.min.css" rel="stylesheet"/>
           <link href="/assets/light-bootstrap-dashboard.css" rel="stylesheet"/>

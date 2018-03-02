@@ -14,14 +14,14 @@ import s from './Home.css';
 import WalletList from '../../containers/walletList';
 import Mining from '../../containers/mining';
 import Stats from '../../containers/stats';
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Table, Grid, Row, Col } from 'react-bootstrap';
 class Home extends React.Component {
 
   render() {
     return (
       <div className="content">
         <Stats />
-        
+       
         <WalletList />
       </div>
     );

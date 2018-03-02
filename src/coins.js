@@ -89,6 +89,7 @@ const set = function(data) {
     coin.percent_change_1h = data.percent_change_1h;
     coin.percent_change_24h = data.percent_change_24h;
     coin.percent_change_7d = data.percent_change_7d;
+    coin.rank = data.rank;
   };
 
 }

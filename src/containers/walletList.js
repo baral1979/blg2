@@ -30,18 +30,14 @@ class WalletList extends Component {
 
   createWalletList() {
       return (
-            <Card
-                title={<Amount onClick={this.handleCurrencyChange.bind(this)} currency={this.props.currency} value_btc={this.getTotal_BTC().toFixed(8)} value_usd={this.getTotal_USD().toFixed(2)}/>}
-                category="TOTAL PORTFOLIO VALUE"
-                ctTableFullWidth ctTableResponsive
-                content={
+        <div className="coins">
                   <Table>
                         <thead>
                             <tr>
 
-                              <th>Coin</th>
-                              <th>Holdings</th>
-                              <th>Price</th>
+                              <th className="text-center" width='10%'>Coin</th>
+                              <th className="text-right" width='40%'>Holdings</th>
+                              <th className="text-right">Price</th>
 
                             </tr>
                         </thead>
@@ -59,7 +55,7 @@ class WalletList extends Component {
                       })
                 }
                  </Table>}
-            />
+            /></div>
       )
   }
 
@@ -85,16 +81,7 @@ class WalletList extends Component {
 
   render() {
     return (
-      <div>
-      <Grid fluid>
-
-        <Row>
-          {this.createWalletList()}
-        </Row>
-
-
-      </Grid>
-      </div>
+        this.createWalletList()
     );
   }
 }
