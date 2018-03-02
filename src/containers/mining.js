@@ -44,6 +44,7 @@ class Mining extends Component {
 
     return mining.map(m => {
       var data = m.getdashboarddata.data;
+      console.log('mining data', data);
       var img = this.props.wallets.filter(w => { return w.symbol === data.pool.info.currency}).map(w => {
         return (<img src={`https://files.coinmarketcap.com/static/img/coins/16x16/${w.id}.png`}/>);
       })

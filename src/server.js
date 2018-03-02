@@ -119,42 +119,9 @@ const sell = function (coin, phone) {
   console.log('selling ' + coin);
 }
 
-
-
-app.post('/twiliomessage', (req, res) => {
-
-  var message = req.body.Body;
-  var regex = /(SELL|sell|Sell)|\b([A-Z]{3,4})\b/g;
-
-  var matches = [];
-  var match;
-  while ((match = regex.exec(message)) !== null) {
-    matches.push(match[0]);
-  }
-  console.log('matches', matches);
-
-  if (matches.length > 1 && matches[0].toLowerCase() === 'sell') {
-    sell(matches[1], req.body.From);
-    res.status(200);
-    res.end();
-    return;
-  }
-
-  const response = new MessagingResponse();
-  response.message(`Sorry I don't understand.. I'm just a bot!`);
-  res.set('Content-Type', 'text/xml');
-  res.send(response.toString());
-
-});
-
-app.use('/data', async (req, res, next) => {
-  if (process.env.BITTREX_APIKEY === undefined)
-    console.log('FY');
-  console.log(process.env.BITTREX_APIKEY);
-  res.status(200);
-  res.send({ key: process.env.BITTREX_APIKEY });
-});
-
+//
+// Mining Details
+// -----------------------------------------------------------------------------
 app.use('/mining', async (req, res, next) => {
   var pools = ['zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
 

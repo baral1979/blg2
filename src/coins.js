@@ -56,9 +56,14 @@ const coins = [{
     symbol: "XLM"
   },
   {
-    id: "raiblocks",
-    name: "RaiBlocks",
-    symbol: "XRB"
+    id: "nano",
+    name: "Nano",
+    symbol: "NANO"
+  },
+  {
+    id: "bitcoin-gold",
+    name: "Bitcoin Gold",
+    symbol: "BTG"
   }
 
 ];
@@ -72,12 +77,27 @@ const coinsToAdd = [
     Source: 'Kucoin'
   },
   {
-    Currency: 'XRB',
-    Balance: 12.77133089,
+    Currency: 'NANO',
+    Balance: 7.72133089,
+    Pending: 0,
+    Available: 0,
+    Source: 'Kucoin'
+  },
+  {
+    Currency: 'ZCL',
+    Balance: 6.5,
+    Pending: 0,
+    Available: 0,
+    Source: 'Alex/TradeSatoshi'
+  },
+  {
+    Currency: 'BTC',
+    Balance: 0.0003886,
     Pending: 0,
     Available: 0,
     Source: 'Kucoin'
   }
+  
 ]
 
 const set = function(data) {
@@ -114,9 +134,6 @@ const mergeBalances = function(balances) {
 
 const mergeBalance = function(data) {
   var coin = get(data.Currency);
-
-  if (data.Currency === 'ZCL')
-    data.Balance -= 0.7403719108;
 
   if (coin) {
     coin.balance = data.Balance;
