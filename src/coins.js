@@ -70,6 +70,11 @@ const coins = [{
   name: "Verge",
   symbol: "XVG"
 },
+{
+  id: "monero",
+  name: "Monero",
+  symbol: "XMR"
+}
 ];
 
 const coinsToAdd = [
@@ -89,10 +94,10 @@ const coinsToAdd = [
   },
   {
     Currency: 'ZCL',
-    Balance: 6.5640154,
+    Balance: 3.5740154,
     Pending: 0,
     Available: 0,
-    Source: 'Alex/TradeSatoshi'
+    Source: 'Alex'
   },
   {
     Currency: 'BTC',

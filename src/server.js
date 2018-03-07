@@ -126,9 +126,10 @@ const sell = function (coin, phone) {
 app.use('/pools', async (req, res, next) => {
 
   // MiningPoolHub
-  var pools = ['zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
+  var pools = ['monero', 'zcash','zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
 
   var urls = pools.map(p => {
+    console.log("https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0");
     return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"
   });
 
