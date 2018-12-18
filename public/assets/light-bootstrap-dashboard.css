@@ -3094,3 +3094,7 @@ body > .navbar-collapse[data-color="purple"]:after {
     .table > thead {
       border-collapse: unset;
     }
+
+    .img-source {
+      height:12px;
+    }

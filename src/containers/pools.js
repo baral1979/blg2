@@ -37,7 +37,7 @@ class Pools extends Component {
                     </div>
                 </div>
                 <div className="coins">
-                    <Table>
+                    <Table>00
                         <thead>
                             <tr>
                                 <th className="text-center" width='10%'>Coin</th>

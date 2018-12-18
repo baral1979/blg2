@@ -20,10 +20,12 @@ class WalletList extends Component {
   }
 
   componentDidMount() {
-    var url = window.location.origin + '/test';
+    var url = window.location.origin + '/yolo';
     const resp = fetch(url).then((resp) => {
       resp.json().then((data) => {
-        this.props.setCoins(data);
+        this.props.setCoins(data.coins);
+        this.props.setOrders(data.orders);
+        console.log('orders', data.orders);
       })
     });
   }
@@ -94,6 +96,6 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispath) {
-  return bindActionCreators({ setCoins: actions.setCoins, setCurrency: actions.setCurrency, setStats: actions.setStats }, dispath);
+  return bindActionCreators({ setOrders: actions.setOrders, setCoins: actions.setCoins, setCurrency: actions.setCurrency, setStats: actions.setStats }, dispath);
 }
 export default connect(mapStateToProps, mapDispatchToProps)(WalletList);

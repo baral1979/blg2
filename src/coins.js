@@ -74,7 +74,26 @@ const coins = [{
   id: "monero",
   name: "Monero",
   symbol: "XMR"
-}
+},
+{
+  id: "nebulas-token",
+  name: "Nebulas",
+  symbol: "NAS"
+},{
+  id: "bitcoin-private",
+  name: "Bitcoin Private",
+  symbol: "BTCP"
+},
+{
+  id: "eos",
+  name: "EOS",
+  symbol: "EOS"
+},
+{
+  id: "vechain",
+  name: "VeChain",
+  symbol: "VEN"
+},
 ];
 
 const coinsToAdd = [
@@ -86,6 +105,20 @@ const coinsToAdd = [
     Source: 'Kucoin'
   },
   {
+    Currency: 'EOS',
+    Balance: 20.17781000, // 456.8935, //
+    Pending: 0,
+    Available: 0,
+    Source: 'Binance'
+  },
+  {
+    Currency: 'NAS',
+    Balance: 5.22, // 456.8935, //
+    Pending: 0,
+    Available: 0,
+    Source: 'CoinGate'
+  },
+  {
     Currency: 'NANO',
     Balance: 7.72133089,
     Pending: 0,
@@ -94,17 +127,17 @@ const coinsToAdd = [
   },
   {
     Currency: 'ZCL',
-    Balance: 3.5740154,
+    Balance: 6.71130712 + 0.79380040 -1,
     Pending: 0,
     Available: 0,
     Source: 'Alex'
   },
   {
     Currency: 'BTC',
-    Balance: 0.0003886,
+    Balance: 0.01344851, 
     Pending: 0,
     Available: 0,
-    Source: 'Kucoin'
+    Source: 'Kucoin+bittrex'
   },
   {
     Currency: 'BTCP',
@@ -112,9 +145,21 @@ const coinsToAdd = [
     Pending: 0,
     Available: 0,
     Source: 'N/A'
+  },
+  {
+    Currency: 'VEN',
+    Balance: 0,
+    Pending: 0,
+    Available: 0,
+    Source: 'N/A'
+  },
+  {
+    Currency: 'ETH',
+    Balance: 0.05036179,
+    Pending: 0,
+    Available: 0,
+    Source: 'Binance'
   }
-
-
 ]
 
 const set = function (data) {

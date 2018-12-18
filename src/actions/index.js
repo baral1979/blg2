@@ -27,7 +27,6 @@ const setStats = (totalValue, payload) => {
 };
 
 const setElectricity = (electricity) => {
-  console.log('setElectricitysetElectricitysetElectricitysetElectricitysetElectricitysetElectricity')
   return {
     type: 'SET_ELECT',
     payload: electricity
@@ -41,11 +40,19 @@ const setPoolBalances = (balances) => {
   }
 };
 
+const setOrders = (orders) => {
+  return {
+    type: 'SET_ORDERS',
+    payload: orders
+  }
+};
+
 export default {
   addCoin : addCoin,
   setCoins : setCoins,
   setCurrency: setCurrency,
   setStats: setStats,
   setPoolBalances,
-  setElectricity
+  setElectricity,
+  setOrders
 }

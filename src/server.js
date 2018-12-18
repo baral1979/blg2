@@ -32,8 +32,12 @@ import coins from './coins';
 import electricity from './electricity';
 import twilio from 'twilio';
 import schedule from 'node-schedule';
+import balances from './balancesRoute';
+var bal = require('./balances');
 
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
+
+console.log('key', process.env.BITTREX_APIKEY, 'secret', process.env.BITTREX_APISECRET)
 bittrex.options({ 'apikey': process.env.BITTREX_APIKEY, 'apisecret': process.env.BITTREX_APISECRET });
 
 const app = express();
@@ -110,7 +114,7 @@ const sell = function (coin, phone) {
 
     var w = data.result.filter((d) => { return d.Currency === coin; });
     if (w && w.length === 1) {
-      console.log(w[0]);
+
       sendMessage(`Alright! Selling ${w[0].Balance} ${w[0].Currency} !`, phone);
       return;
     }
@@ -120,16 +124,41 @@ const sell = function (coin, phone) {
   console.log('selling ' + coin);
 }
 
+app.use('/yolo', async (req, res, next) => {
+  bal.getBalances().then(r => {
+    var coins = r.coins.map(x => {
+      return {
+        id: x.stats.id,
+        name: x.stats.name,
+        symbol: x.coin,
+        price_usd: x.stats.price_usd,
+        price_btc: x.stats.price_btc,
+        percent_change_1h: x.stats.percent_change_1h,
+        percent_change_24h: x.stats.percent_change_24h,
+        percent_change_7d: x.stats.percent_change_7d,
+        balance: x.available + x.reserved,
+        source: x.source,
+        value_usd: (x.available + x.reserved) * x.stats.price_usd,
+        value_btc: (x.available + x.reserved) * x.stats.price_btc,
+      }
+    });
+    res.status(200);
+    res.json({coins: coins, orders: r.orders});
+  }).catch(e => {
+    res.status(400);
+    res.json(e);
+  })
+});
+
 //
 // Mining Details
 // -----------------------------------------------------------------------------
 app.use('/pools', async (req, res, next) => {
 
   // MiningPoolHub
-  var pools = ['monero', 'zcash','zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
+  var pools = ['monero', 'zcash', 'zclassic', 'feathercoin', 'zencash', 'bitcoin-gold'];
 
   var urls = pools.map(p => {
-    console.log("https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0");
     return "https://" + p + ".miningpoolhub.com/index.php?page=api&action=getdashboarddata&api_key=18cd5879937bf6b16c055d29790dbfad40b2271f36153672827512c9e9c3bda0"
   });
 
@@ -144,7 +173,20 @@ app.use('/pools', async (req, res, next) => {
     }).catch((err) => { reject(err) });
   });
 
-  Promise.all(urls.map(grabContent).concat(yiimp)).then((result) => {
+  // Nano
+
+  var nanoEth = new Promise((resolve, reject) => {
+    var t = fetch('https://api.nanopool.org/v1/eth/balance/0xb6b703303e266a6bfd8237f9cd65f498f16ed1a3').then(res => res.text()).then(html => {
+      resolve(html);
+    }).catch((err) => { reject(err) });
+  });
+
+
+  var uu = urls.map(grabContent).concat(nanoEth);
+
+  //uu = uu.concat(yiimp);
+  console.log('uu', uu.length);
+  Promise.all(uu).then((result) => {
     var pools = result.slice(0, result.length - 1).map(function (x) {
       return {
         balance: x.getdashboarddata.data.balance.confirmed + x.getdashboarddata.data.balance.unconfirmed,
@@ -153,15 +195,31 @@ app.use('/pools', async (req, res, next) => {
       };
     });
 
+    console.log('nano', result[result.length - 1]);
+
+    // try {
+    //   // var yimp = result[result.length - 1];
+    //   // var xvgBalance = parseFloat(yimp.split('-')[0].replace('XVG', ''));
+
+    //   pools.push(
+    //     {
+    //       balance: 0.1,
+    //       symbol: 'XVG',
+    //       pool: 'YiiMP'
+    //     }
+    //   )
+    // } catch (error) {
+
+    // }
+
     try {
-      var yimp = result[result.length - 1];
-      var xvgBalance = parseFloat(yimp.split('-')[0].replace('XVG', ''));
+      var nano = JSON.parse(result[result.length - 1]);
 
       pools.push(
         {
-          balance: xvgBalance,
-          symbol: 'XVG',
-          pool: 'YiiMP'
+          balance: parseFloat(nano.data),
+          symbol: 'ETH',
+          pool: 'Nano'
         }
       )
     } catch (error) {
@@ -205,7 +263,7 @@ app.use('/pools', async (req, res, next) => {
       res.json(err);
     });
 
-    console.log(urls);
+
 
 
   }).catch((err) => {
@@ -220,6 +278,8 @@ app.use('/electricity', async (req, res, next) => {
   res.status(200);
   res.json(electricity.electricity);
 });
+
+app.use
 
 app.use('/test', async (req, res, next) => {
   var dep = new Promise((resolve, reject) => {
@@ -274,7 +334,7 @@ app.use('/test', async (req, res, next) => {
           coins.set(data[0]);
         }
       });
-      
+
       //console.log(deposits);
       // get stats
       for (var i = 0; i < balances.length; i++) {
@@ -290,6 +350,7 @@ app.use('/test', async (req, res, next) => {
         coins.mergeBalances(balances);
         coins.mergeDeposits(deposits);
         res.status(200);
+
         res.json(coins.all());
       }).catch((err) => {
         res.status(400);
@@ -305,6 +366,8 @@ app.use('/test', async (req, res, next) => {
     res.send({ error: error });
   }
 });
+
+app.use('/balance', balances);
 
 //
 // Register server-side rendering middleware

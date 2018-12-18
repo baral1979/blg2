@@ -27,10 +27,17 @@ class Electricity extends Component {
         function Total(props) {
             if (props === null || props.data === null || props.data.length === 0)
                 return null;
+            var sum = 0, watts = 0;
 
-            const reducer = (accumulator, currentValue) => accumulator.amount + currentValue.amount;
-            var sum = props.data.reduce(reducer);
-            return (<span>{sum} kWh</span>)
+            for (let index = 0; index < props.data.length; index++) {
+                const element = props.data[index];
+                sum += element.price;
+                watts += element.amount;
+                
+            }
+            // const reducer = (accumulator, currentValue) => accumulator.price + currentValue.price;
+            // var sum = props.data.reduce(reducer);
+            return (<span>{watts} kWh <span className="label label-default">${sum.toFixed(2)}</span></span>)
         }
 
         return (

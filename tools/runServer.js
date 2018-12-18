@@ -10,6 +10,7 @@
 import path from 'path';
 import cp from 'child_process';
 import webpackConfig from './webpack.config';
+import { sign } from 'cookie-signature';
 
 // Should match the text string used in `src/server.js/server.listen(...)`
 const RUNNING_REGEXP = /The server is running at http:\/\/(.*?)\//;
@@ -52,6 +53,9 @@ function runServer() {
 
     if (pending) {
       server.once('exit', (code, signal) => {
+        console.log('code:', code);
+        console.log('signal:', signal);
+        console.log('pending:', pending);
         if (pending) {
           throw new Error(
             `Server terminated unexpectedly with code: ${code} signal: ${

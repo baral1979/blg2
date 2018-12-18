@@ -33,20 +33,45 @@ export class Coin extends Component {
 
     return null;
   }
-  //   <tr>
-  //   <td></td>
-  //   <td>{coin.balance + coin.pending}</td>
-  //   <td><Percent value={coin.percent_change_24h}/></td>
-  // </tr>
+
+
+
+
   render() {
     var coin = this.props.coin;
-    
+
+    function SourceLogo(props) {
+
+      function getColor(source) {
+        var stringHexNumber = (                       // 1
+          parseInt(                                 // 2
+            parseInt(source, 36)  // 3
+              .toExponential()                  // 4
+              .slice(2, -5)                      // 5
+            , 10) & 0xFFFFFF                          // 6
+        ).toString(16).toUpperCase();
+
+        return { background: '#' + stringHexNumber };
+      }
+
+      var source = "Offline";
+      if (props && props.source)
+        source = props.source
+
+
+      return (<label className="label label-primary" style={getColor(source)}>{source}</label>)
+
+
+    }
+
+
     return (
       <tbody key={coin.id}>
         <tr >
           <td className="text-center"><img src={`/assets/img/${coin.symbol.toLowerCase()}.png`} />
             <br />
-            <span className="coin-symbol">{coin.symbol}</span>
+            <span className="coin-symbol">{coin.symbol}</span><br />
+            <SourceLogo source={coin.source} />
           </td>
           <td className="text-right">
             <Amount currency={this.props.currency} value_usd={coin.value_usd.toFixed(2)} value_btc={coin.value_btc.toFixed(8)} />
